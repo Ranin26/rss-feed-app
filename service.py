@@ -14,7 +14,7 @@ import traceback, sys,io
 from shared import *
 
 PORT = int(os.getenv("PORT", 8000))
-DB_FILE = os.getenv("DB_FILE", "./data/feeds.db")
+DB_FILE = os.getenv("DB_FILE", "/app/data/feeds.db")
 DEBUG = os.getenv("DEBUG", "0").lower() in ("1", "true", "yes")  or (hasattr(sys, "gettrace") and sys.gettrace() is not None)
 
 app = FastAPI(title="RSS Feed Service")
