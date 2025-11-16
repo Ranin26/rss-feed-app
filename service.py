@@ -14,7 +14,8 @@ import traceback, sys,io
 from shared import *
 
 PORT = int(os.getenv("PORT", 8000))
-DB_FILE = os.getenv("DB_FILE", "/app/data/feeds.db")
+MOUNT_PATH = os.getenv("RAILWAY_VOLUME_MOUNT_PATH", os.getenv("MOUNT_PATH","./data"))
+DB_FILE = f"{MOUNT_PATH}/feeds.db"
 DEBUG = os.getenv("DEBUG", "0").lower() in ("1", "true", "yes")  or (hasattr(sys, "gettrace") and sys.gettrace() is not None)
 
 app = FastAPI(title="RSS Feed Service")
@@ -159,6 +160,8 @@ def dump_database_to_file():
 def seed_initial_data():
     print("SQLite Library Version:", sqlite3.sqlite_version)
     print("pysqlite Wrapper Version:", sqlite3.version)
+    print("MOUNT_PATH ", MOUNT_PATH)
+    print("DB_FILE ", DB_FILE)
     path = "."
     print(f"--- Subdirectories in {os.path.abspath(path)} ---")
     subdirs = []
