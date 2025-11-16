@@ -14,6 +14,7 @@ import traceback, sys,io
 from shared import *
 
 PORT = int(os.getenv("PORT", 8000))
+VOLUME_NAME = os.getenv("RAILWAY_VOLUME_NAME", "no volume name")
 MOUNT_PATH = os.getenv("RAILWAY_VOLUME_MOUNT_PATH", os.getenv("MOUNT_PATH","./data"))
 DB_FILE = f"{MOUNT_PATH}/feeds.db"
 DEBUG = os.getenv("DEBUG", "0").lower() in ("1", "true", "yes")  or (hasattr(sys, "gettrace") and sys.gettrace() is not None)
@@ -436,6 +437,33 @@ async def websocket_endpoint(websocket: WebSocket):
 # REST endpoints (still available for non-WebSocket clients)
 @app.on_event("startup")
 async def startup():
+    print(VOLUME_NAME)
+    # Debug: Print environment and filesystem info
+    print("=" * 50)
+    print("ENVIRONMENT VARIABLES:")
+    for key, value in os.environ.items():
+        if 'RAILWAY' in key or 'VOLUME' in key or 'MOUNT' in key:
+            print(f"{key} = {value}")
+    
+    print("\nROOT DIRECTORY CONTENTS:")
+    print(os.listdir('/'))
+    
+    print("\nAPP DIRECTORY CONTENTS:")
+    print(os.listdir('/app'))
+    
+    print("\nCURRENT WORKING DIRECTORY:")
+    print(os.getcwd())
+    
+    print("\nCHECKING MOUNT PATHS:")
+    possible_paths = ['/data', '/app/data', '/mnt/data', '/volume/data']
+    for path in possible_paths:
+        exists = os.path.exists(path)
+        print(f"{path}: {'EXISTS' if exists else 'NOT FOUND'}")
+        if exists:
+            print(f"  Contents: {os.listdir(path)}")
+            print(f"  Writable: {os.access(path, os.W_OK)}")
+    
+    print("=" * 50)
     #dump_database_to_file()
     seed_initial_data()  # Add this line
     init_db()
