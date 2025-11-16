@@ -159,6 +159,25 @@ def dump_database_to_file():
 def seed_initial_data():
     print("SQLite Library Version:", sqlite3.sqlite_version)
     print("pysqlite Wrapper Version:", sqlite3.version)
+    path = "."
+    print(f"--- Subdirectories in {os.path.abspath(path)} ---")
+    subdirs = []
+    try:
+        # Use os.scandir for efficiency
+        with os.scandir(path) as entries:
+            for entry in entries:
+                if entry.is_dir():
+                    subdirs.append(entry.name)
+                    print(entry.name)
+    except FileNotFoundError:
+        print(f"The directory '{path}' was not found.")
+    except PermissionError:
+        print(f"Permission denied for directory '{path}'.")
+    except OSError as e:
+        print(f"An OS error occurred: {e}")
+    
+    return subdirs
+
     """Seed database with initial data if empty"""
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
