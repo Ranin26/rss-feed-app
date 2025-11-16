@@ -14,11 +14,14 @@ import traceback, sys,io
 from shared import *
 
 PORT = int(os.getenv("PORT", 8000))
+OVERRIDE_DB_FILE = os.getenv('OVERRIDE_DB_FILE', None)
 SQLITE_SERVICE_PATH = os.getenv('SQLITE_PRIVATE_PATH', None)
 VOLUME_NAME = os.getenv("RAILWAY_VOLUME_NAME", "no volume name")
 MOUNT_PATH = SQLITE_SERVICE_PATH if SQLITE_SERVICE_PATH else os.getenv("RAILWAY_VOLUME_MOUNT_PATH", os.getenv("MOUNT_PATH","./data"))
 DB_FILE = f"{MOUNT_PATH}/feeds" if SQLITE_SERVICE_PATH else f"{MOUNT_PATH}/feeds.db"
 DEBUG = os.getenv("DEBUG", "0").lower() in ("1", "true", "yes")  or (hasattr(sys, "gettrace") and sys.gettrace() is not None)
+
+DB_FILE = OVERRIDE_DB_FILE if OVERRIDE_DB_FILE else DB_FILE
 
 app = FastAPI(title="RSS Feed Service")
 
