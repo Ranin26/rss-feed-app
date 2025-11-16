@@ -183,8 +183,6 @@ def seed_initial_data():
         print(f"Permission denied for directory '{path}'.")
     except OSError as e:
         print(f"An OS error occurred: {e}")
-    
-    return subdirs
 
     """Seed database with initial data if empty"""
     conn = sqlite3.connect(DB_FILE)
