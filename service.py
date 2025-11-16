@@ -10,11 +10,11 @@ from time import mktime
 from email.utils import parsedate_to_datetime
 import asyncio
 from typing import List, Optional, Set
-import traceback, sys
+import traceback, sys,io
 from shared import *
 
 PORT = int(os.getenv("PORT", 8000))
-DB_FILE = os.getenv("DB_FILE", "/app/data/feeds.db")
+DB_FILE = os.getenv("DB_FILE", "data/feeds_ws.db")
 DEBUG = os.getenv("DEBUG", "0").lower() in ("1", "true", "yes")  or (hasattr(sys, "gettrace") and sys.gettrace() is not None)
 
 app = FastAPI(title="RSS Feed Service")
@@ -121,6 +121,61 @@ def init_db():
     
     conn.commit()
     conn.close()
+def dump_database_to_file():
+    """
+    Dumps an SQLite database to a text file containing SQL statements.
+
+    Args:
+        database_path (str): The path to the source SQLite database file.
+        output_file_path (str): The path where the SQL dump file should be saved.
+    """
+    try:
+        # Connect to the SQLite database
+        conn = sqlite3.connect("feeds_ws.db")
+        
+        # Open the output file in write mode ('w')
+        # Use io.open for compatibility with different encoding requirements, default is utf-8
+        with io.open("seed.txt", 'w', encoding='utf-8') as f:
+            # Use iterdump() to get an iterator of SQL statements
+            for line in conn.iterdump():
+                line = line.replace("CREATE TABLE", "CREATE TABLE IF NOT EXISTS")
+                f.write('%s\n' % line)
+        
+        print(f"Database 'feeds_ws.db' successfully dumped to 'seed.txt'")
+
+    except sqlite3.Error as e:
+        print(f"SQLite error: {e}")
+    except IOError as e:
+        print(f"File I/O error: {e}")
+    finally:
+        # Ensure the connection is closed
+        if conn:
+            conn.close()
+
+# --- Example Usage ---
+# Replace 'your_database.db' with the path to your database file
+# Replace 'database_dump.sql' with your desired output file name
+
+def seed_initial_data():
+    print("SQLite Library Version:", sqlite3.sqlite_version)
+    print("pysqlite Wrapper Version:", sqlite3.version)
+    """Seed database with initial data if empty"""
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    
+    print("Seeding initial data...")
+    file_path = "seed.txt"  # Replace with your file's path
+
+    try:
+        with open(file_path, 'r') as file:
+            content = file.read()
+        conn.executescript(content)
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        print(f"Database seed Failed {e}")
+        return
+    print("Database seeded successfully!")
 
 # Helper function to sleep with interruption
 async def interruptible_sleep(event, seconds):
@@ -359,6 +414,8 @@ async def websocket_endpoint(websocket: WebSocket):
 # REST endpoints (still available for non-WebSocket clients)
 @app.on_event("startup")
 async def startup():
+    #dump_database_to_file()
+    seed_initial_data()  # Add this line
     init_db()
     load_settings()
     asyncio.create_task(background_fetch_loop())

@@ -9,6 +9,9 @@ venv/
 *.egg-info/
 dist/
 build/
+backup/
+launch_helper.py
+test.py
 
 # Database
 *.db
@@ -27,3 +30,6 @@ build/
 # OS
 .DS_Store
 Thumbs.db
+
+#Other
+*.exe
