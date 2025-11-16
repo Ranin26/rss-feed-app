@@ -14,8 +14,9 @@ import traceback, sys,io
 from shared import *
 
 PORT = int(os.getenv("PORT", 8000))
+SQLITE_SERVICE_PATH = os.getenv('SQLITE_PRIVATE_PATH', None)
 VOLUME_NAME = os.getenv("RAILWAY_VOLUME_NAME", "no volume name")
-MOUNT_PATH = os.getenv("RAILWAY_VOLUME_MOUNT_PATH", os.getenv("MOUNT_PATH","./data"))
+MOUNT_PATH = SQLITE_SERVICE_PATH if SQLITE_SERVICE_PATH else os.getenv("RAILWAY_VOLUME_MOUNT_PATH", os.getenv("MOUNT_PATH","./data"))
 DB_FILE = f"{MOUNT_PATH}/feeds.db"
 DEBUG = os.getenv("DEBUG", "0").lower() in ("1", "true", "yes")  or (hasattr(sys, "gettrace") and sys.gettrace() is not None)
 
